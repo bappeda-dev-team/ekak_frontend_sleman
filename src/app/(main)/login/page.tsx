@@ -32,7 +32,7 @@ const LoginPage = () => {
     const [FetchCaptcha, setFetchCaptcha] = useState<boolean>(false);
     const [ErrorCaptcha, setErrorCaptcha] = useState<boolean>(false);
 
-    const [TimeLeft, setTimeLeft] = useState<number>(300); // 5 menit
+    const [TimeLeft, setTimeLeft] = useState<number>(10); // 5 menit
     const [TimeExpired, setTimeExpired] = useState<boolean>(false);
 
     const router = useRouter();
@@ -182,7 +182,7 @@ const LoginPage = () => {
                     }
                     <ButtonSky
                         type="submit"
-                        className="w-full"
+                        className={`w-full ${TimeLeft > 0 && "cursor-not-allowed"}`}
                         disabled={Proses || TimeLeft > 0}
                     >
                         {Proses ? (

@@ -65,13 +65,23 @@ const Dashboard = () => {
               <TbAlertCircle className="font-bold text-4xl p-1 animate-pulse" />
               Disarankan mengganti password default sekarang dengan password baru
             </h1>
-            <ButtonRedBorder 
-              onClick={() => AlertNotification("Maintenance", "fitur ganti password sedang dalam perbaikan, anda bisa mengganti password default setelah fitur tersedia", "info", 5000, true)}
-              className="flex items-center gap-2"
-            >
-              <TbPencil />
-              Edit
-            </ButtonRedBorder>
+            <Link href="/edit-password">
+              <ButtonRedBorder
+                onClick={() =>
+                  AlertNotification(
+                    "Maintenance",
+                    "fitur ganti password sedang dalam perbaikan, anda bisa mengganti password default setelah fitur tersedia",
+                    "info",
+                    5000,
+                    true
+                  )
+                }
+                className="flex items-center gap-2"
+              >
+                <TbPencil />
+                Edit
+              </ButtonRedBorder>
+            </Link>
           </div>
         }
       </div>
