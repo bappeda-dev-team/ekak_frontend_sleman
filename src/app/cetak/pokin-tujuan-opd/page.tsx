@@ -176,7 +176,7 @@ const CetakTujuanOpdPokin = () => {
                                 {Pohon?.childs &&
                                     <ul>
                                         {Pohon?.childs.map((item: any, index: number) => (
-                                            <React.Fragment>
+                                            <React.Fragment key={index}>
                                                 <PohonOpdCetak tema={item} />
                                             </React.Fragment>
                                         ))}
