@@ -18,7 +18,13 @@ export const getCookie = (name: string): string | null => {
   return null;
 };
 
-export const login = async (username: string, password: string): Promise<boolean> => {
+export const login = async (username: string, password: string, captcha_id: string, captcha_answer: string): Promise<boolean> => {
+  const payload = {
+    username: username,
+    password: password,
+    captcha_key: captcha_id,
+    captcha_answer: captcha_answer,
+  }
   try {
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
     const response = await fetch(`${API_URL}/user/login`, {
@@ -26,7 +32,7 @@ export const login = async (username: string, password: string): Promise<boolean
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify(payload),
     });
 
     const data = await response.json();
@@ -38,23 +44,23 @@ export const login = async (username: string, password: string): Promise<boolean
         // Simpan token di cookie
         document.cookie = `token=${token}; path=/;`;
         document.cookie = `user=${JSON.stringify(decoded)}; path=/;`;
-        AlertNotification("Login Berhasil", "", "success", 1000)
+        AlertNotification("Login Berhasil", "" , "success", 1000)
         return true;
       } catch (decodeError) {
-        AlertNotification("Login Gagal", `${data.data}`, "error", 1000)
+        AlertNotification("Login Gagal", `${data.data}` , "error", 1000)
         console.error('Error decoding token:', data.code);
         return false;
       }
     } else if (data.code === 400) {
-      AlertNotification("Login Gagal", `${data.data}`, "error", 1000)
-      return false;
-    } else {
-      console.log(`Login gagal: Status ${data.data}`);
-      return false;
-    }
-  } catch (err) {
-    AlertNotification("Login Gagal", "terdapat kesalahan server / koneksi internet", "error", 2000)
-    console.error('Login gagal dengan error:', err);
+        AlertNotification("Login Gagal", `${data.data}` , "error", 1000)
+        return false;
+      } else {
+        console.log(`Login gagal: Status ${data.data}`);
+        return false;
+      }
+    } catch (err) {
+      AlertNotification("Login Gagal", "terdapat kesalahan server / koneksi internet" , "error", 2000)
+      console.error('Login gagal dengan error:', err);
     return false;
   }
 };
