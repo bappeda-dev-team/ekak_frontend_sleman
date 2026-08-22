@@ -16,212 +16,349 @@ interface FormValue {
 }
 
 export const FormEditPassword = () => {
-
     const {
         control,
         handleSubmit,
         formState: { errors },
     } = useForm<FormValue>();
 
-    const [Proses, setProses] = useState<boolean>(false);
     const router = useRouter();
-    const token = getToken();
+
+    const [Proses, setProses] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [User, setUser] = useState<any>(null);
 
     useEffect(() => {
         const fetchUser = getUser();
-        if (fetchUser) {
+
+        if (fetchUser?.user) {
             setUser(fetchUser.user);
         }
     }, []);
 
     const onSubmit: SubmitHandler<FormValue> = async (data) => {
-        const formData = {
-            //key : value
-            password: data.password,
-            confirm_password: data.confirm_password
-        };
-        if (data.password === data.confirm_password) {
-            alert("dalam pengembangan");
-            console.log(formData);
-        } else {
-            AlertNotification("Password tidak sama", "passowrd harus sama dengan konfirmasi password", "warning", 2000);
+        if (data.password !== data.confirm_password) {
+            AlertNotification(
+                "Gagal",
+                "Password dan konfirmasi password tidak sama!",
+                "error",
+                1400
+            );
+            return;
         }
-        // try {
-        //     setProses(true);
-        //     const response = await fetch(`${API_URL}/user/create`, {
-        //         method: "POST",
-        //         headers: {
-        //             Authorization: `${token}`,
-        //             'Content-Type': 'application/json',
-        //         },
-        //         body: JSON.stringify(formData),
-        //     });
-        //     const data = await response.json();
-        //     if (data.code === 201 || data.code === 200) {
-        //         AlertNotification("Berhasil", "Berhasil menambahkan data user", "success", 1000);
-        //         router.push("/useropd");
-        //     } else if (data.code === 400) {
-        //         AlertNotification("Gagal", `${data.data}`, "error", 3000, true);
-        //     } else {
-        //         AlertNotification("Gagal", `${data.data}`, "error", 3000, true);
-        //     }
-        // } catch (err) {
-        //     AlertNotification("Gagal", "cek koneksi internet/terdapat kesalahan pada database server", "error", 2000);
-        // } finally {
-        //     setProses(false);
-        // }
+
+        setProses(true);
+
+        try {
+            const token = getToken();
+            const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+            const response = await fetch(`${API_URL}/user/password`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    password: data.password,
+                    confirm_password: data.confirm_password,
+                }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result?.status || "Gagal mengubah password"
+                );
+            }
+
+            AlertNotification(
+                "Berhasil",
+                "Password berhasil diperbarui",
+                "success",
+                1500
+            );
+
+            router.push("/");
+        } catch (error) {
+            console.error("Gagal mengubah password:", error);
+
+            AlertNotification(
+                "Gagal",
+                error instanceof Error
+                    ? error.message
+                    : "Terjadi kesalahan saat mengubah password",
+                "error",
+                2000
+            );
+        } finally {
+            setProses(false);
+        }
     };
 
     return (
-        <>
-            <div className="border p-5 rounded-xl shadow-xl">
-                <h1 className="uppercase font-bold">Form Edit Password User :</h1>
-                <form
-                    onSubmit={handleSubmit(onSubmit)}
-                    className="flex flex-col mx-5 py-5"
-                >
+        <div className="border p-5 rounded-xl shadow-xl">
+            <h1 className="uppercase font-bold">
+                Form Edit Password User
+            </h1>
 
-                    <div className="flex flex-col py-1">
-                        <label className="uppercase text-xs font-bold text-gray-700 my-2">
-                            Nama & NIP :
-                        </label>
-                        <div className="flex flex-col gap-1">
-                            <div className="border border-green-600 px-4 py-2 rounded-lg flex-1">
-                                {User?.nama_pegawai || "unknown"}
-                            </div>
-                            <div className="border border-green-600 px-4 py-2 rounded-lg flex-1">
-                                {User?.nip || "unknown"}
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex flex-col py-1">
-                        <label className="uppercase text-xs font-bold text-gray-700 my-2">
-                            Perangkat Daerah :
-                        </label>
-                        <div className="border border-green-600 px-4 py-2 rounded-lg flex-1">
-                            {User?.nama_opd || "unknown"}
-                        </div>
-                    </div>
-                    <div className="flex flex-col py-1">
-                        <label className="uppercase text-xs font-bold text-gray-700 my-2">
-                            Roles :
-                        </label>
-                        <div className="border border-green-600 px-4 py-2 rounded-lg flex-1">
-                            {User?.roles || "tidak memiliki role"}
-                        </div>
-                    </div>
-                    <div className="flex flex-col py-1">
-                        <label
-                            className="uppercase text-xs font-bold text-gray-700 my-2"
-                            htmlFor="password"
-                        >
-                            Password:
-                        </label>
-                        <Controller
-                            name="password"
-                            control={control}
-                            rules={{ required: "Password harus terisi" }}
-                            render={({ field }) => {
-                                return (
-                                    <>
-                                        <div className="flex items-center">
-                                            <input
-                                                {...field}
-                                                className="border px-4 py-2 rounded-lg flex-1"
-                                                id="password"
-                                                type={showPassword ? "text" : "password"}
-                                                placeholder="Masukkan Password"
-                                                onChange={(e) => {
-                                                    field.onChange(e);
-                                                }}
-                                            />
-                                            <button
-                                                type="button"
-                                                className="absolute right-20 text-sm"
-                                                onClick={() => setShowPassword(!showPassword)}
-                                            >
-                                                {showPassword ? <TbEye /> : <TbEyeClosed />}
-                                            </button>
-                                        </div>
-                                        {errors.password ? (
-                                            <h1 className="text-red-500">{errors.password.message}</h1>
-                                        ) : (
-                                            <h1 className="text-slate-300 text-xs">*Password Harus Terisi</h1>
-                                        )}
-                                    </>
-                                );
-                            }}
-                        />
-                    </div>
-                    <div className="flex flex-col py-1">
-                        <label
-                            className="uppercase text-xs font-bold text-gray-700 my-2"
-                            htmlFor="confirm_password"
-                        >
-                            Konfirmasi Password:
-                        </label>
-                        <Controller
-                            name="confirm_password"
-                            control={control}
-                            rules={{ required: "Konfirmasi Password harus terisi" }}
-                            render={({ field }) => {
-                                return (
-                                    <>
-                                        <div className="flex items-center">
-                                            <input
-                                                {...field}
-                                                className="border px-4 py-2 rounded-lg flex-1"
-                                                id="password"
-                                                type={showConfirmPassword ? "text" : "password"}
-                                                placeholder="Masukkan Konfirmasi Password"
-                                                onChange={(e) => {
-                                                    field.onChange(e);
-                                                }}
-                                            />
-                                            <button
-                                                type="button"
-                                                className="absolute right-20 text-sm"
-                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                            >
-                                                {showConfirmPassword ? <TbEye /> : <TbEyeClosed />}
-                                            </button>
-                                        </div>
-                                        {errors.confirm_password ? (
-                                            <h1 className="text-red-500">{errors.confirm_password.message}</h1>
-                                        ) : (
-                                            <h1 className="text-slate-300 text-xs">*Konfirmasi Password Harus Terisi</h1>
-                                        )}
-                                    </>
-                                );
-                            }}
-                        />
-                    </div>
-                    <ButtonGreen
-                        type="submit"
-                        className="mt-4 mb-2"
-                        disabled={Proses}
+            <form
+                onSubmit={handleSubmit(onSubmit)}
+                className="flex flex-col mx-5 py-5"
+            >
+                {/* Nama Pegawai */}
+                <div className="flex flex-col py-1">
+                    <label
+                        htmlFor="nama_pegawai"
+                        className="uppercase text-xs font-bold text-gray-700 my-2"
                     >
-                        {Proses ?
-                            <span className="flex items-center gap-1">
-                                <LoadingButtonClip />
-                                Menyimpan...
-                            </span>
-                            :
-                            <span className="flex items-center gap-1">
-                                <TbDeviceFloppy />
-                                Simpan
-                            </span>
+                        Nama Pegawai
+                    </label>
+
+                    <input
+                        id="nama_pegawai"
+                        type="text"
+                        value={User?.nama_pegawai || ""}
+                        disabled
+                        className="border border-green-600 bg-gray-100 px-4 py-2 rounded-lg text-gray-600 cursor-not-allowed"
+                    />
+                </div>
+
+                {/* NIP */}
+                <div className="flex flex-col py-1">
+                    <label
+                        htmlFor="nip"
+                        className="uppercase text-xs font-bold text-gray-700 my-2"
+                    >
+                        NIP
+                    </label>
+
+                    <input
+                        id="nip"
+                        type="text"
+                        value={User?.nip || ""}
+                        disabled
+                        className="border border-green-600 bg-gray-100 px-4 py-2 rounded-lg text-gray-600 cursor-not-allowed"
+                    />
+                </div>
+
+                {/* Email */}
+                <div className="flex flex-col py-1">
+                    <label
+                        htmlFor="email"
+                        className="uppercase text-xs font-bold text-gray-700 my-2"
+                    >
+                        Email
+                    </label>
+
+                    <input
+                        id="email"
+                        type="text"
+                        value={User?.email || ""}
+                        disabled
+                        className="border border-green-600 bg-gray-100 px-4 py-2 rounded-lg text-gray-600 cursor-not-allowed"
+                    />
+                </div>
+
+                {/* Perangkat Daerah */}
+                <div className="flex flex-col py-1">
+                    <label
+                        htmlFor="nama_opd"
+                        className="uppercase text-xs font-bold text-gray-700 my-2"
+                    >
+                        Perangkat Daerah
+                    </label>
+
+                    <input
+                        id="nama_opd"
+                        type="text"
+                        value={User?.nama_opd || ""}
+                        disabled
+                        className="border border-green-600 bg-gray-100 px-4 py-2 rounded-lg text-gray-600 cursor-not-allowed"
+                    />
+                </div>
+
+                {/* Roles */}
+                <div className="flex flex-col py-1">
+                    <label
+                        htmlFor="roles"
+                        className="uppercase text-xs font-bold text-gray-700 my-2"
+                    >
+                        Roles
+                    </label>
+
+                    <input
+                        id="roles"
+                        type="text"
+                        value={
+                            Array.isArray(User?.roles)
+                                ? User.roles.join(", ")
+                                : User?.roles || "Tidak memiliki role"
                         }
-                    </ButtonGreen>
-                    <ButtonRed type="button" halaman_url="/" className="flex items-center gap-1">
-                        <TbArrowBack />
-                        Kembali
-                    </ButtonRed>
-                </form>
-            </div>
-        </>
-    )
-}
+                        disabled
+                        className="border border-green-600 bg-gray-100 px-4 py-2 rounded-lg text-gray-600 cursor-not-allowed"
+                    />
+                </div>
+
+                {/* Password */}
+                <div className="flex flex-col py-1">
+                    <label
+                        htmlFor="password"
+                        className="uppercase text-xs font-bold text-gray-700 my-2"
+                    >
+                        Password Baru
+                    </label>
+
+                    <Controller
+                        name="password"
+                        control={control}
+                        rules={{
+                            required: "Password harus terisi",
+                            minLength: {
+                                value: 8,
+                                message: "Password minimal 8 karakter",
+                            },
+                        }}
+                        render={({ field }) => (
+                            <>
+                                <div className="relative flex items-center">
+                                    <input
+                                        {...field}
+                                        id="password"
+                                        type={
+                                            showPassword
+                                                ? "text"
+                                                : "password"
+                                        }
+                                        placeholder="Masukkan password baru"
+                                        disabled={Proses}
+                                        className="border px-4 py-2 rounded-lg w-full pr-10"
+                                    />
+
+                                    <button
+                                        type="button"
+                                        disabled={Proses}
+                                        className="absolute right-3 text-sm"
+                                        onClick={() =>
+                                            setShowPassword((value) => !value)
+                                        }
+                                    >
+                                        {showPassword ? (
+                                            <TbEye />
+                                        ) : (
+                                            <TbEyeClosed />
+                                        )}
+                                    </button>
+                                </div>
+
+                                {errors.password ? (
+                                    <p className="text-red-500">
+                                        {errors.password.message}
+                                    </p>
+                                ) : (
+                                    <p className="text-slate-300 text-xs">
+                                        *Password minimal 8 karakter
+                                    </p>
+                                )}
+                            </>
+                        )}
+                    />
+                </div>
+
+                {/* Confirm Password */}
+                <div className="flex flex-col py-1">
+                    <label
+                        htmlFor="confirm_password"
+                        className="uppercase text-xs font-bold text-gray-700 my-2"
+                    >
+                        Konfirmasi Password Baru
+                    </label>
+
+                    <Controller
+                        name="confirm_password"
+                        control={control}
+                        rules={{
+                            required: "Konfirmasi password harus terisi",
+                        }}
+                        render={({ field }) => (
+                            <>
+                                <div className="relative flex items-center">
+                                    <input
+                                        {...field}
+                                        id="confirm_password"
+                                        type={
+                                            showConfirmPassword
+                                                ? "text"
+                                                : "password"
+                                        }
+                                        placeholder="Masukkan ulang password baru"
+                                        disabled={Proses}
+                                        className="border px-4 py-2 rounded-lg w-full pr-10"
+                                    />
+
+                                    <button
+                                        type="button"
+                                        disabled={Proses}
+                                        className="absolute right-3 text-sm"
+                                        onClick={() =>
+                                            setShowConfirmPassword(
+                                                (value) => !value
+                                            )
+                                        }
+                                    >
+                                        {showConfirmPassword ? (
+                                            <TbEye />
+                                        ) : (
+                                            <TbEyeClosed />
+                                        )}
+                                    </button>
+                                </div>
+
+                                {errors.confirm_password ? (
+                                    <p className="text-red-500">
+                                        {errors.confirm_password.message}
+                                    </p>
+                                ) : (
+                                    <p className="text-slate-300 text-xs">
+                                        *Konfirmasi password harus terisi
+                                    </p>
+                                )}
+                            </>
+                        )}
+                    />
+                </div>
+
+                {/* Submit */}
+                <ButtonGreen
+                    type="submit"
+                    className="mt-4 mb-2"
+                    disabled={Proses}
+                >
+                    {Proses ? (
+                        <span className="flex items-center gap-1">
+                            <LoadingButtonClip />
+                            Menyimpan...
+                        </span>
+                    ) : (
+                        <span className="flex items-center gap-1">
+                            <TbDeviceFloppy />
+                            Simpan
+                        </span>
+                    )}
+                </ButtonGreen>
+
+                <ButtonRed
+                    type="button"
+                    halaman_url="/"
+                    className="flex items-center gap-1"
+                    disabled={Proses}
+                >
+                    <TbArrowBack />
+                    Kembali
+                </ButtonRed>
+            </form>
+        </div>
+    );
+};
