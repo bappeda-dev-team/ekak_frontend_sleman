@@ -32,32 +32,42 @@ const LoginPage = () => {
     const [FetchCaptcha, setFetchCaptcha] = useState<boolean>(false);
     const [ErrorCaptcha, setErrorCaptcha] = useState<boolean>(false);
 
-    const [TimeLeft, setTimeLeft] = useState<number>(10); // 5 menit
-    const [TimeExpired, setTimeExpired] = useState<boolean>(false);
+    const [Fail, setFail] = useState<number>(0);
+    const [TimeLeft, setTimeLeft] = useState<number>(0);
 
     const router = useRouter();
     const { branding } = useBrandingContext();
 
     const onSubmit: SubmitHandler<FormValues> = async (data) => {
+        if (TimeLeft > 0) {
+            return;
+        }
         setProses(true);
         try {
-            const isLoggedIn = await login(data.username, data.password, Captcha?.captcha_id ?? "", data.captcha_answer);
+            const isLoggedIn = await login(
+                data.username,
+                data.password,
+                Captcha?.captcha_id ?? "",
+                data.captcha_answer
+            );
             if (isLoggedIn) {
-                router.push('/'); // Redirect ke halaman dashboard jika login berhasil
+                router.push('/');
+            } else {
+                setFail((prev) => prev + 1);
+                setFetchCaptcha((prev) => !prev);
             }
         } catch (error) {
-            console.error(error)
+            console.error(error);
         } finally {
             setProses(false);
         }
     };
 
     useEffect(() => {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL;
         const fetchCaptcha = async () => {
             setLoading(true);
             try {
-                const response = await fetch(`${API_URL}/user/captcha`, {
+                const response = await fetch(`${branding?.api_perencanaan}/user/captcha`, {
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -81,6 +91,20 @@ const LoginPage = () => {
     }, [FetchCaptcha]);
 
     useEffect(() => {
+        if (Fail < 3) {
+            return;
+        }
+        // Aktifkan cooldown 10 detik
+        setTimeLeft(300);
+        // Reset jumlah gagal
+        setFail(0);
+    }, [Fail]);
+
+    useEffect(() => {
+        if (TimeLeft <= 0) {
+            return;
+        }
+
         const timer = setInterval(() => {
             setTimeLeft((prev) => {
                 if (prev <= 1) {
@@ -93,7 +117,7 @@ const LoginPage = () => {
         }, 1000);
 
         return () => clearInterval(timer);
-    }, []);
+    }, [TimeLeft]);
 
     const minutes = Math.floor(TimeLeft / 60);
     const seconds = TimeLeft % 60;
@@ -182,7 +206,7 @@ const LoginPage = () => {
                     }
                     <ButtonSky
                         type="submit"
-                        className={`w-full ${TimeLeft > 0 && "cursor-not-allowed"}`}
+                        className={`w-full ${TimeLeft > 0 ? "cursor-not-allowed" : ""}`}
                         disabled={Proses || TimeLeft > 0}
                     >
                         {Proses ? (
