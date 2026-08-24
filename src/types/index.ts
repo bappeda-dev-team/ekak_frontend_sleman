@@ -69,3 +69,13 @@ export interface PermasalahanOpd {
     level_pohon: number;
     masalah: string;
 }
+
+export type LoginResponse = {
+    success: boolean;
+    token?: string;
+    isLocked: boolean;
+    remainingTime: number;
+    remainingMinute: number;
+    remainingSecond: number;
+    message?: string;
+};
