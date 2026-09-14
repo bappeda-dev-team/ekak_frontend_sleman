@@ -364,12 +364,12 @@ export const Sidebar = ({ isZoomed, isOpen, toggleSidebar }: SidebarProps) => {
                   <span className={`${!isOpen && 'hidden'} origin-left duration-200`}>Master Pegawai</span>
                 </li>
               </Link>
-              <Link href="/DataMaster/cari-pegawai">
+              {/*  <Link href="/DataMaster/cari-pegawai">
                 <li className={`flex items-center gap-x-2 cursor-pointer p-2 rounded-xl transition-all duration-300 ease-in-out ${url === "/DataMaster/cari-pegawai" ? "bg-white text-gray-800" : "hover:bg-slate-500"}`}>
                   <TbUserSearch className="text-xl" />
                   <span className={`${!isOpen && 'hidden'} origin-left duration-200`}>Cari Pegawai</span>
                 </li>
-              </Link>
+              </Link> */}
               <Link href="/DataMaster/masterperiode">
                 <li className={`flex items-center gap-x-2 cursor-pointer p-2 rounded-xl transition-all duration-300 ease-in-out ${url === "/DataMaster/masterperiode" ? "bg-white text-gray-800" : "hover:bg-slate-500"}`}>
                   <TbCalendar className="text-xl" />

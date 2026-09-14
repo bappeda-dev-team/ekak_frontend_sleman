@@ -1,7 +1,12 @@
+import Maintenance from "@/components/global/Maintenance";
 import Table from "./comp/Table";
 import { FiHome } from "react-icons/fi";
 
 const CariPegawaiPage = () => {
+    const isMaintenance = true;
+    if (isMaintenance) {
+        return <Maintenance />
+    }
     return (
         <>
             <div className="flex items-center">

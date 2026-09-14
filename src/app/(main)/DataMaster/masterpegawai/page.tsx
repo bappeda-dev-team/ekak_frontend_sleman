@@ -1,15 +1,127 @@
-import Table from "@/components/pages/datamaster/masterpegawai/Table";
+'use client'
+
+import { useEffect, useState } from "react";
 import { FiHome } from "react-icons/fi";
+import { getUser, getOpdTahun } from "@/components/lib/Cookie";
+import { TableLoading } from "@/components/global/Loading"
+import { SyncDataMasterOpd, SyncDataMasterPegawai } from "@/components/global/SyncButton";
+import { toast } from 'react-toastify';
+import TablePegawaiSimpeg from "./comp/TablePegawaiSimpeg";
 
 const masterpegawai = () => {
+    const [User, setUser] = useState<any>(null);
+    const [SelectedOpd, setSelectedOpd] = useState<any>(null);
+    const [Tahun, setTahun] = useState<any>(null);
+
+    // Loading saat pertama kali mengambil context user/OPD/tahun
+    const [initialLoading, setInitialLoading] = useState(true);
+
+    // Loading hanya untuk proses sync
+    const [syncLoading, setSyncLoading] = useState(false);
+
+    // Berubah setiap kali sync berhasil
+    const [fetchTrigger, setFetchTrigger] = useState(0);
+
+    useEffect(() => {
+        const data = getOpdTahun();
+        const fetchUser = getUser();
+
+        if (data?.tahun) {
+            setTahun(data.tahun.value);
+        }
+
+        if (data?.opd) {
+            setSelectedOpd({
+                value: data.opd.value,
+                label: data.opd.label,
+            });
+        }
+
+        if (fetchUser) {
+            setUser(fetchUser.user);
+        }
+        setInitialLoading(false);
+    }, []);
+
+    const isSuperAdmin = User?.roles.some((r: string) => ["super_admin"].includes(r));
+
+    const nama_opd = isSuperAdmin
+        ? SelectedOpd?.label
+        : User?.nama_opd;
+
+    const kode_opd = isSuperAdmin
+        ? SelectedOpd?.value
+        : User?.kode_opd;
+
+    const syncPegawaiSimpeg = async () => {
+        if (!kode_opd) {
+            toast.error("❌ Kode OPD tidak ditemukan");
+            return;
+        }
+
+        setSyncLoading(true);
+        try {
+            const response = await fetch("/api-data-master/pegawai/sync", {
+                method: 'POST',
+                body: JSON.stringify({
+                    kode_opd: kode_opd
+                })
+            })
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result?.message ?? "SYNC SIMPEG GAGAL"
+                )
+            }
+            toast.success("✅ SYNC BERHASIL")
+
+            // Beritahu TablePegawaiSimpeg untuk fetch ulang
+            setFetchTrigger(prev => prev + 1);
+        } catch (err) {
+            console.error("Sync SIMPEG error:", err);
+
+            toast.error(
+                err instanceof Error
+                    ? `❌ ${err.message}`
+                    : "❌ Gagal SYNC SIMPEG"
+            );
+        }
+        finally {
+            setSyncLoading(false);
+        }
+    }
+
     return (
         <>
             <div className="flex items-center">
                 <a href="/" className="mr-1"><FiHome /></a>
-                <p className="mr-1">/ Data Master</p>
+                <p className="mr-1">/ Data Master OPD</p>
                 <p className="mr-1">/ Master Pegawai</p>
             </div>
-            <Table />
+            <div className="mt-3 rounded-xl shadow-lg border">
+                <div className="flex items-center justify-between border-b px-5 py-5">
+                    <div className="flex flex-col gap-1">
+                        <h1 className="uppercase font-bold">
+                            Daftar Pegawai - {nama_opd || ""}
+                        </h1>
+                    </div>
+                    <SyncDataMasterPegawai
+                        loading={syncLoading}
+                        onSync={syncPegawaiSimpeg}
+                    />
+                </div>
+                <div className="flex flex-wrap m-2">
+                    <div className="overflow-auto m-2 rounded-t-xl border border-gray-200 w-full">
+                        {initialLoading || syncLoading || !kode_opd ? (
+                            <TableLoading rowCount={5} />
+                        ) : (
+                            <TablePegawaiSimpeg kode_opd={kode_opd} fetchTrigger={fetchTrigger} />
+                        )}
+                    </div>
+                </div>
+            </div>
         </>
     )
 }
