@@ -1,12 +1,45 @@
 'use client'
 
 import { FiHome } from "react-icons/fi";
-import { TbCirclePlus } from "react-icons/tb";
-import { ButtonSky } from "@/components/global/Button";
-import Table from "@/components/pages/datamaster/masteropd/Table";
+import { useState } from "react";
+import TableSimpeg from "@/components/pages/datamaster/masteropd/TableSimpeg";
+import { TableLoading } from "@/components/global/Loading"
+import { SyncDataMasterOpd } from "@/components/global/SyncButton";
+import { toast } from 'react-toastify';
 
-const masteropd = () => {
-    return(
+const Page = () => {
+    const [loading, setLoading] = useState<boolean>(false);
+
+    const syncSimpeg = async () => {
+        setLoading(true)
+        try {
+            const response = await fetch("/api-data-master/opd/sync", {
+                method: 'POST'
+            })
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result?.message ?? "SYNC SIMPEG GAGAL"
+                )
+            }
+            toast.success("✅ SYNC BERHASIL")
+        } catch (err) {
+            console.error("Sync SIMPEG error:", err);
+
+            toast.error(
+                err instanceof Error
+                    ? `❌ ${err.message}`
+                    : "❌ Gagal SYNC SIMPEG"
+            );
+        }
+        finally {
+            setLoading(false)
+        }
+    }
+
+    return (
         <>
             <div className="flex items-center">
                 <a href="/" className="mr-1"><FiHome /></a>
@@ -18,20 +51,14 @@ const masteropd = () => {
                     <div className="flex flex-col items-end">
                         <h1 className="uppercase font-bold">Daftar OPD</h1>
                     </div>
-                    <div className="flex flex-col">
-                        <ButtonSky 
-                            className="flex items-center justify-center"
-                            halaman_url='/DataMaster/masteropd/tambah'
-                        >
-                            <TbCirclePlus className="mr-1"/>
-                            Tambah OPD
-                        </ButtonSky>
+                    <div className="flex gap-3">
+                        <SyncDataMasterOpd loading={loading} onSync={syncSimpeg} />
                     </div>
                 </div>
-                <Table />
+                {loading ? <TableLoading rowCount={5} /> : <TableSimpeg />}
             </div>
         </>
     )
 }
 
-export default masteropd;
+export default Page;

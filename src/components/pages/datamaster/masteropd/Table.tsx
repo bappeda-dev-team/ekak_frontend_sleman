@@ -41,7 +41,7 @@ const Table = () => {
         const fetchOpd = async() => {
             setLoading(true)
             try{
-                const response = await fetch(`${API_URL}/opd/findall`, {
+              const response = await fetch(`/api-data-master/opd/findall`, {
                     headers: {
                         Authorization: `${token}`,
                         'Content-Type': 'application/json',
