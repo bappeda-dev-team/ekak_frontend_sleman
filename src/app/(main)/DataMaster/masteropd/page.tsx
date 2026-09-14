@@ -7,7 +7,7 @@ import { TableLoading } from "@/components/global/Loading"
 import { SyncDataMasterOpd } from "@/components/global/SyncButton";
 import { toast } from 'react-toastify';
 
-const masteropd = () => {
+const Page = () => {
     const [loading, setLoading] = useState<boolean>(false);
 
     const syncSimpeg = async () => {
@@ -61,4 +61,4 @@ const masteropd = () => {
     )
 }
 
-export default masteropd;
+export default Page;

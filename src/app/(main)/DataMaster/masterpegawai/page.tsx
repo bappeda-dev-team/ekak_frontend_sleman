@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import { FiHome } from "react-icons/fi";
 import { getUser, getOpdTahun } from "@/components/lib/Cookie";
 import { TableLoading } from "@/components/global/Loading"
-import { SyncDataMasterOpd, SyncDataMasterPegawai } from "@/components/global/SyncButton";
+import { SyncDataMasterPegawai } from "@/components/global/SyncButton";
 import { toast } from 'react-toastify';
 import TablePegawaiSimpeg from "./comp/TablePegawaiSimpeg";
 
-const masterpegawai = () => {
+const Page = () => {
     const [User, setUser] = useState<any>(null);
     const [SelectedOpd, setSelectedOpd] = useState<any>(null);
     const [Tahun, setTahun] = useState<any>(null);
@@ -126,4 +126,4 @@ const masterpegawai = () => {
     )
 }
 
-export default masterpegawai;
+export default Page;
