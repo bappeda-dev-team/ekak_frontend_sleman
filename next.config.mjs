@@ -9,6 +9,7 @@ function generateCSP() {
         process.env.NEXT_PUBLIC_API_URL_CSF,
         process.env.NEXT_PUBLIC_API_URL_TAGGING,
         process.env.NEXT_PUBLIC_API_URL_CASCADING_PEMDA,
+        process.env.NEXT_PUBLIC_API_DATA_MASTER_URL,
     ].filter(Boolean);
 
     const connectSrc = ["'self'", ...allowedDomains].join(' ');
@@ -75,6 +76,11 @@ const nextConfig = {
                 protocol: 'https',
                 hostname: 'logo.kertaskerja.cc',
                 pathname: '**'
+            },
+            {
+                protocol: 'https',
+                hostname: 'apikabsleman.zeabur.app',
+                pathname: '/user/captcha'
             }
         ]
     },

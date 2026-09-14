@@ -9,6 +9,7 @@ interface Opd {
     opd_kode: string;
     opd_level: number;
     opd_nama: string;
+    kode_nomenklatur: string;
 }
 
 interface ApiResponse<T> {
@@ -112,7 +113,7 @@ const Table = () => {
                         </th>
 
                         <th className="border-l border-b px-6 py-3 min-w-[200px]">
-                            Aksi
+                            Kode Nomenklatur
                         </th>
                     </tr>
                 </thead>
@@ -147,9 +148,7 @@ const Table = () => {
                                 </td>
 
                                 <td className="border-r border-b px-6 py-4">
-                                    <div className="flex flex-col justify-center items-center gap-2">
-                                        {/* TODO: ADD BUTTON TO SHOW PEGAWAI */}
-                                    </div>
+                                    {data.kode_nomenklatur}
                                 </td>
                             </tr>
                         ))
