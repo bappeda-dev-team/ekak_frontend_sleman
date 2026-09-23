@@ -9,6 +9,7 @@ import Select from 'react-select';
 import { PohonCascadingEdited } from './PohonCascading';
 import { getToken, getUser } from '../../Cookie';
 import { LoadingButtonClip } from '@/components/global/Loading';
+import { DataMasterPegawaiResponse } from '@/app/(main)/DataMaster/masterpegawai/comp/TablePegawaiSimpeg';
 
 interface OptionTypeString {
     value: string;
@@ -115,8 +116,13 @@ export const FormEditCascading: React.FC<{
         const API_URL = process.env.NEXT_PUBLIC_API_URL;
         setIsLoading(true);
         try {
-            const url = user?.roles == 'super_admin' ? `user/findbykodeopdandrole?kode_opd=${SelectedOpd?.value}&role=${role}` : `user/findbykodeopdandrole?kode_opd=${user?.kode_opd}&role=${role}`
-            const response = await fetch(`${API_URL}/${url}`, {
+            // const url = user?.roles == 'super_admin' ? `user/findbykodeopdandrole?kode_opd=${SelectedOpd?.value}&role=${role}` : `user/findbykodeopdandrole?kode_opd=${user?.kode_opd}&role=${role}`
+            const url = user?.roles == 'super_admin' ? 
+                `/api-data-master/pegawai/find?kodeOpd=${encodeURIComponent(SelectedOpd?.value)}` 
+                : 
+                `/api-data-master/pegawai/find?kodeOpd=${encodeURIComponent(user?.kode_opd)}`
+
+            const response = await fetch(`${url}`, {
                 method: 'GET',
                 headers: {
                     Authorization: `${token}`,
@@ -131,9 +137,9 @@ export const FormEditCascading: React.FC<{
                 setPelaksanaOption([]);
                 console.log(`data user dengan ${role} tidak ditemukan`)
             } else {
-                const opd = data.data.map((item: any) => ({
-                    value: item.pegawai_id,
-                    label: item.nama_pegawai,
+                const opd = data.data.map((item: DataMasterPegawaiResponse) => ({
+                    value: item.id,
+                    label: item.pegawai_nama,
                 }));
                 setPelaksanaOption(opd);
             }
